@@ -8,15 +8,15 @@ Simple tool to bruteforce HTTP authentication forms.
 
 ### usage 
 ```python
-python3 python3 bruteforce-http-authentication.py -w http://site.com  -u username -f passwords.txt  -m basic
-python3 python3 bruteforce-http-authentication.py -w http://site.com  -u username -f passwords.txt  -m digest
+python3 python3 bruteforce-http-authentication.py -t http://site.com  -u username -p passwords.txt  -m basic
+python3 python3 bruteforce-http-authentication.py -t http://site.com  -u username -p passwords.txt  -m digest
 ```
 
 ### Arguments
 ```json 
-    -w: url (https://test.com)
-    -u: dictionary file
-    -f: dictionary file
+    -t: url (https://test.com)
+    -u: users from file
+    -p: passwords from file
     -m: method (basic or digest)
 ```    
 ### Requirements
