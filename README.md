@@ -15,7 +15,7 @@ python3 python3 bruteforce-http-authentication.py -w http://site.com  -u usernam
 ### Arguments
 ```json 
     -w: url (https://test.com)
-    -u: username
+    -u: dictionary file
     -f: dictionary file
     -m: method (basic or digest)
 ```    
@@ -26,3 +26,4 @@ python3 -m pip install -r requirements.txt
 
 ### Dictionaries
 **[SecLists](https://github.com/danielmiessler/SecLists/tree/master/Passwords)**
+**[https://weakpass.com/generate](https://weakpass.com/generate)** - great way to generate passwords based on the few crucial words

